@@ -5,7 +5,8 @@ Created on Thu Jun 29 17:53:40 2017
 @author: bec1
 """
 
-camera_guid = 2892819673563407
+cameras_d = {'vertical': 2892819673563407,
+             }
 
 default_savedir = '/home/bec1/camera/raw'
 

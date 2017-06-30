@@ -23,7 +23,7 @@ from PySide import QtGui, QtCore
 from lib.ui.main_ui import Ui_MainWindow
 
 from pydc1394 import Camera
-from settings import default_savedir, setup_camera, camera_guid
+from settings import default_savedir, setup_camera, cameras_d
 from lib.lib_tif import write_tif
 
 
@@ -96,11 +96,12 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         
     def deinit_camera(self):
         pass
-        
-if __name__ == '__main__':
+    
+def _main(guid, name):
     app = QtGui.QApplication(sys.argv)
-    cam = Camera(guid=camera_guid, iso_speed=800)
+    cam = Camera(guid=guid, iso_speed=800)
     main = Main(cam)
+    main.setWindowTitle('pyCAM -- %s'%name)
     
     main.show()
     try:
@@ -115,3 +116,21 @@ if __name__ == '__main__':
         main.stop_camera()
         main.deinit_camera()
         sys.exit(status)
+        
+if __name__ == '__main__':
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Test.')
+    parser.add_argument('name', action='store', type=str, help='Camera name (see settings.py)')
+    args = parser.parse_args()
+    
+    try:
+        guid = cameras_d[args.name]
+        _main(guid, args.name)
+    except KeyError as e:
+        print(e)
+        s = '%s not registered in the camera database.\nSee settings.py for valid camera names:\n'%(args.name)
+        s += 'registered cameras:\n' + '\n'.join(['%s:\t%d'%(name, cameras_d[name]) for name in cameras_d])
+        print(s)
+    
+    
