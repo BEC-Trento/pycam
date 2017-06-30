@@ -20,11 +20,11 @@
 
 import sys, os, time
 from PySide import QtGui, QtCore
-from lib.ui.main_ui import Ui_MainWindow
+from modules.ui.main_ui import Ui_MainWindow
 
 from pydc1394 import Camera
 from settings import default_savedir, setup_camera, cameras_d
-from lib.lib_tif import write_tif
+from modules.lib_tif import write_tif
 
 
 class Main(QtGui.QMainWindow, Ui_MainWindow):
