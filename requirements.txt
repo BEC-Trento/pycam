@@ -1,0 +1,6 @@
+future==0.16.0
+numpy==1.13.0
+pyqtgraph==0.10.0
+libtiff==0.4.1.dev0
+PySide==1.2.4
+pydc1394==2.0
