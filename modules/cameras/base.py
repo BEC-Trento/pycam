@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Created on Fri Feb 10 12:44:42 2017
+# Created on Tue Jul  4 00:12:36 2017
 # Copyright (C) 2016  Carmelo Mordini
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from builtins import str
-from future import standard_library
-standard_library.install_aliases()
-import numpy as np
-from libtiff import TIFF
-    
-        
-def read_tif(filename, full_output=False):
-    tiff = TIFF.open(filename, mode='r')
-    image = tiff.read_image()
-    tiff.close()
-    header = ''
-    image = np.asarray(image)
-    if full_output:
-        return header, image
-    else:
-        return image
+from abc import ABCMeta, abstractmethod
 
-def write_tif(filename, array):
-    tiff = TIFF.open(str(filename), mode='w')
-    tiff.write_image(array)
-    tiff.close()
+class BaseCamera(metaclass=ABCMeta):
+    def __init__(self, ):
+        pass
+    
+    @abstractmethod
+    def setup(self, **kwargs):
+        pass
