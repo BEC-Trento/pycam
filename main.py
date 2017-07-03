@@ -120,7 +120,7 @@ def _main(guid, name):
 if __name__ == '__main__':
     import argparse
     
-    parser = argparse.ArgumentParser(description='Test.')
+    parser = argparse.ArgumentParser(description='Camera names.')
     parser.add_argument('name', action='store', type=str, help='Camera name (see settings.py)')
     args = parser.parse_args()
     
