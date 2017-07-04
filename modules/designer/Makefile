@@ -4,11 +4,11 @@ RESOURCE_DIR = .
  
 #Directory for compiled resources
 COMPILED_DIR = ../ui
-COMPILED_RESOURCES_DIR = ../..
+COMPILED_RESOURCES_DIR = ../ui
  
 #UI files to compile
-UI_FILES = $(wildcard $(RESOURCE_DIR)/*.ui)
-#UI_FILES = mainwindow.ui
+#UI_FILES = $(wildcard $(RESOURCE_DIR)/*.ui)
+UI_FILES = $(RESOURCE_DIR)/main.ui
 #Qt resource files to compile
 RESOURCES = $(wildcard $(RESOURCE_DIR)/*.qrc)
 
@@ -29,7 +29,7 @@ resources : $(COMPILED_RESOURCES)
 ui : $(COMPILED_UI)
  
 $(COMPILED_DIR)/%_ui.py : $(RESOURCE_DIR)/%.ui
-	$(PYUIC) $< -o $@
+	$(PYUIC) $< --from-imports -o $@
  
 $(COMPILED_RESOURCES_DIR)/%_rc.py : $(RESOURCE_DIR)/%.qrc
 	$(PYRCC) $< -py3 -o $@
