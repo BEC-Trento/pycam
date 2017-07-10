@@ -24,28 +24,46 @@ from PySide import QtGui, QtCore
 from modules.ui.main_ui import Ui_MainWindow
 
 from pydc1394 import Camera
-from settings import default_savedir, default_savename, cameras_d, setup_d, pictures_d
+from settings import default_savedir, bg_savedir, default_savename, cameras_d, setup_d, pictures_d
 from modules.imageio.sis2_lib import write_sis
+from modules.background_matching import BackgroundManager
 
 
 class Main(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, camera, *args, **kwargs):
+    def __init__(self, camera, name, *args, **kwargs):
         super(Main, self).__init__( *args, **kwargs)
         self.setupUi(self)
+        self._roi_controls = [getattr(self, n) for n in ['roiHeightSpinBox', 'roiWidthSpinBox',
+                              'roiTopSpinBox', 'roiLeftSpinBox']]
         self.imageView.getImageItem().axisOrder = 'row-major'
         
+        self._name = name
         self._savedir = default_savedir
         self._savename = default_savename
         self._count = None
         self.count = 0
         self._frames_list = []
         self._finalize = None
+        
+        self.bgman = BackgroundManager(name=self._name, savedir=bg_savedir)
+        self.on_toggle_bgmatch(False)
+        
 
-        self.connectInputWidgets()
-        self.pictureSelectComboBox.addItems(list(pictures_d.keys()))
         self.saveToLineEdit.setText(os.path.join(self._savedir, self._savename))
         self.camera = camera
+        
         setup_camera(self.camera, setup_d)
+        # WARNING: tutte le funzioni e importazioni della ROI funzionano solo con un mode: FORMAT7
+        # TODO: implementa switch: if isinstance(mode, Format7)
+        self._mode = self.camera.mode
+        print('Roi:', self._mode.roi)
+#        print(self._mode.data_depth)
+        self.limit_roi_spinboxes()
+        self.rewrite_roi_spinboxes()
+        self.connectInputWidgets()
+        self.pictureSelectComboBox.addItems(list(pictures_d.keys()))
+        
+        
         
     @property
     def count(self):
@@ -53,7 +71,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
     @count.setter
     def count(self, value):
         self._count = value
-        self.counterSpinBox.setValue(value)
+        self.counterDisplay.display(value)
         
     @property
     def savepath(self):
@@ -65,10 +83,78 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
     def save_flag(self):
         return self.saveRawCheckBox.isChecked()
         
+    @property
+    def match_bg(self):
+        return self.bgMatchCheckBox.isChecked()
+        
+    def rewrite_roi_spinboxes(self):
+        for box in self._roi_controls:
+            box.blockSignals(True)
+        (w,h), (l,t) = self._mode.roi[:2]
+        self.roiHeightSpinBox.setValue(h)
+        self.roiWidthSpinBox.setValue(w)
+        ul, ut = self._mode.unit_position
+        self.roiTopSpinBox.setValue(t)
+        self.roiLeftSpinBox.setValue(l)
+        ps = self._mode.packet_size
+        fps, dt = self.calc_fps(w, h, ps)
+        self.statusbar.showMessage('packet_size: %d | fps: %.2f | dt: %d ms'%(ps, fps, dt))
+        for box in self._roi_controls:
+            box.blockSignals(False)
+    
+    def limit_roi_spinboxes(self,):        
+        mw, mh = self._mode.max_image_size
+#        print(mh,mw)
+        uw, uh = self._mode.unit_size
+        self.roiHeightSpinBox.setRange(uh, mh)
+        self.roiHeightSpinBox.setSingleStep(uh)
+        self.roiWidthSpinBox.setRange(uw, mw)
+        self.roiWidthSpinBox.setSingleStep(uw)
+        ul, ut = self._mode.unit_position
+        self.roiTopSpinBox.setRange(0, mh)
+        self.roiTopSpinBox.setSingleStep(ut)
+        self.roiLeftSpinBox.setRange(0, mw)
+        self.roiLeftSpinBox.setSingleStep(ul)
+        
+    def setup_roi(self,):
+        self.stop_camera()
+        mw, mh = self._mode.max_image_size
+        w, h = self.roiWidthSpinBox.value(), self.roiHeightSpinBox.value()
+        image_position=(self.roiLeftSpinBox.value(), self.roiTopSpinBox.value())
+        image_size=(min(w, mw-image_position[0]), min(h, mh-image_position[1]))
+        self._mode.image_position = image_position
+        self._mode.image_size = image_size
+        ps = self._mode.recommended_packet_size
+        self._mode.packet_size = ps
+        self.camera.trigger.mode = '1'
+        print('ROI set to', self._mode.roi)
+        print('Pack pars:', self._mode.packet_parameters)
+        fps, dt = self.calc_fps(w, h, ps)
+        self.statusbar.showMessage('packet_size: %d | fps: %.2f | dt: %d ms'%(ps, fps, dt))
+#        print('Frame interval: %.3e'%self._mode.frame_interval)
+        self.rewrite_roi_spinboxes()
+        self.start_camera()
+            
+    def setup_roi_max(self,):
+        self.stop_camera()
+        self._mode.image_position = (0,0)
+        self._mode.image_size = self._mode.max_image_size
+        self._mode.packet_size = self._mode.recommended_packet_size
+        self.camera.trigger.mode = '1'
+        self.rewrite_roi_spinboxes()
+        print('ROI set to max:', self._mode.roi)
+        self.start_camera()
+        
+        
     def connectInputWidgets(self):
         self.saveToPushButton.clicked.connect(self.change_savedir)
         self.pictureSelectComboBox.currentIndexChanged[str].connect(self.load_picture)
         self.saveToLineEdit.textChanged.connect(self.change_savedir_manual)
+        for spinbox in self._roi_controls:
+            spinbox.valueChanged.connect(self.setup_roi)
+        self.roiMaxPushButton.clicked.connect(self.setup_roi_max)
+        self.bgMatchCheckBox.stateChanged.connect(self.on_toggle_bgmatch)
+        self.bgAcquirePushButton.toggled.connect(self.on_toggle_bgacquire)
         
         
     def load_picture(self, pic_name):
@@ -79,6 +165,8 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             self.lock_n_frames(lock=True, value=n_frames)
         else:
             self.lock_n_frames(lock=False, value=-1)
+        self.reset_pic_counter()
+        print('Picture %s set up'%pic_name)
         
         
     def lock_n_frames(self, lock=True, value=1):
@@ -105,12 +193,28 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
     def change_savedir_manual(self):
         self._savedir, self._savename = os.path.split(self.saveToLineEdit.text())
         
+    def on_toggle_bgmatch(self, state):
+        print('toggle use bgmatch')
+        for widget in ['bgAcquirePushButton', 'bgNameGuiLabel', 'bgNameLabel']:
+            getattr(self, widget).setVisible(state)
+        pass
+    
+    def on_toggle_bgacquire(self, checked):
+        if checked:
+            self.last_pic = self.pictureSelectComboBox.currentText()
+            self.pictureSelectComboBox.setVisible(False)
+            self.load_picture('Movie')
+            self._finalize = self.bgman.build_acquired_bg
+        else:
+            self.load_picture(self.last_pic)
+            self.pictureSelectComboBox.setVisible(True)
+            
     def start_camera(self):
         self.camera.start_capture()
         self.camera.start_video()
 
     def process_images(self):
-        QtCore.QTimer.singleShot(50, self.process_images)
+        QtCore.QTimer.singleShot(1, self.process_images)
         frame = None
         while True:
             frame_ = self.camera.dequeue(poll=True)
@@ -124,12 +228,12 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             return
         im = frame.copy().astype('Float64') #type uint16
         self.count += 1
+        self._frames_list.append(im)
         print('acquired image %d'%self.count)
         print(im.dtype)
         frame.enqueue()
         if self.save_flag:
             self.save_frame(im)
-        self._frames_list.append(im)
 #        self.imageView.setImage(im, autoRange=True, autoLevels=True,
 #            autoHistogramRange=True)
         if len(self._frames_list) == self.n_frames:
@@ -141,18 +245,27 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
 #        fname = 'im-%d.tif'%self.count
 #        write_tif(os.path.join(self.savedir, fname), frame)
         
+    def calc_fps(self, width, height, pack_size):
+        fps = pack_size * 8000 /(width*height * 2)
+        dt = int(np.ceil(1e3/fps))
+        return fps, dt
+        
     def finalize(self):
         if self._finalize is not None:
             print('apply finalize fun %s'%self._finalize.__name__)
         od = self._finalize(self._frames_list)
-        stack = np.empty((len(self._frames_list),)+od.shape)
+        stack = np.empty((len(self._frames_list),)+self._frames_list[0].shape)
         for j, im in enumerate(self._frames_list):
             stack[j] = im
         print(stack.shape)
         self.imageView.setImage(stack, autoRange=True, autoLevels=True,
             autoHistogramRange=True)
-        write_sis(self.savepath, od)
-        np.save(self.savepath[:-4]+'.npy', od)
+        if od is not None:
+            write_sis(self.savepath, od)
+            np.save(self.savepath[:-4]+'.npy', od)
+        self.reset_pic_counter()
+        
+    def reset_pic_counter(self):
         self._frames_list = []
         self.count = 0
 
@@ -180,7 +293,7 @@ def setup_camera(cam, setups):
 def _main(guid, name):
     app = QtGui.QApplication(sys.argv)
     cam = Camera(guid=guid, iso_speed=800)
-    main = Main(cam)
+    main = Main(cam, name=name)
     main.setWindowTitle('pyCAM -- %s'%name)
     
     main.show()
@@ -212,5 +325,6 @@ if __name__ == '__main__':
         s = '%s not registered in the camera database.\nSee settings.py for valid camera names:\n'%(args.name)
         s += 'registered cameras:\n' + '\n'.join(['%s:\t%d'%(name, cameras_d[name]) for name in cameras_d])
         print(s)
+        raise(e)
     
     

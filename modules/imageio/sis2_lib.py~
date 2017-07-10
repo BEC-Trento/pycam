@@ -226,7 +226,8 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
             freeHead = '0'*(472-len(commitProg[:8]+stamp))
             fid.write(freeHead.encode())
             
-            image = image * 2**16/10
+            image = image * (2**16)/10
+            image = np.clip(image, 1, 2**16-1)
             image.astype(np.uint16).tofile(fid)
         print('sis written to ' + filename)
 

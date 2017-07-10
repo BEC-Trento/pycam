@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="newPrefix">
+    <file>icon-eye-128.png</file>
     <file>icon-folder-128.png</file>
   </qresource>
 </RCC>
