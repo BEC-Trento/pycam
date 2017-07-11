@@ -40,26 +40,34 @@ class BackgroundManager():
         fmt='%Y-%m-%d-%H-%M-%S-{fname}'
         return datetime.now().strftime(fmt).format(fname=self._name)
     
-    def load_dataset(self, path_list):
-        self.sis_path_list = path_list
-        # _l = []
-        # for p in path_list:
-        #     b = self.readsis_simple(p)[1]
-        #     _l.append(b)
-        _l = [self.readsis_simple(p)[1] for p in path_list]
-        B_dataset = np.concatenate([b[np.newaxis, :,:] for b in _l], axis=0)
-        self.imshape = B_dataset[0].shape
-        self.B_dataset = B_dataset
-        # return B_dataset
         
-    def build_acquired_bg(self, frames_list):
+    def build_acquired_bg(self, frames_list, match_bg_fun=None):
         dataset = np.concatenate([f[np.newaxis, ...] for f in frames_list], axis=0)
         self.name = self.get_timestamped_name()
         path = os.path.join(self.savedir, self.name + '.npy')
         np.save(path, dataset)
         print('saved bg dataset %s'%path)
         return None
-    
+        
+    def default_mask(self, shape):
+        h, w = shape
+        mask = np.zeros(shape)
+        mask[:, :w//6] = 1
+        mask[:, w-w//6:] = 1
+        mask[:h//6, :] = 1
+        mask[h-h//6:, :] = 1
+        return mask.astype(bool)
+        
+    def load_dataset(self, file):
+        self.B_dataset = np.load(file)
+        print('Loaded dataset with shape', self.B_dataset.shape)
+        self.imshape = self.B_dataset[0].shape
+        # TODO: implement custom mask and saving via np.savez_compressed
+        mask = self.default_mask(self.imshape)
+        print('gen default mask')
+        self.load_mask(mask)
+        self.compute_bg_matrix()
+        
     def load_mask(self, mask):
         self.mask = mask
         
@@ -71,7 +79,8 @@ class BackgroundManager():
             print('You must set a mask first')
             return
         beta = np.concatenate([b[self.mask][np.newaxis, :] for b in self.B_dataset], axis=0)
-        self.BB = np.dot(beta, beta.T)        
+        self.BB = np.dot(beta, beta.T)
+        print('Match area shape:', beta.shape)        
         self.beta = beta
         # return beta, BB_inv
 

@@ -71,6 +71,9 @@
         <property name="minimum">
          <number>-1</number>
         </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
        </widget>
       </item>
       <item row="3" column="7">
@@ -112,19 +115,6 @@
       <item row="0" column="7">
        <widget class="QLCDNumber" name="counterDisplay"/>
       </item>
-      <item row="2" column="4">
-       <widget class="QPushButton" name="bgAcquirePushButton">
-        <property name="text">
-         <string>Acquire</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="2">
        <widget class="QLabel" name="bgNameGuiLabel">
         <property name="text">
@@ -141,6 +131,26 @@
       </item>
       <item row="3" column="2" colspan="4">
        <widget class="QLineEdit" name="saveToLineEdit"/>
+      </item>
+      <item row="2" column="5">
+       <widget class="QPushButton" name="bgAcquirePushButton">
+        <property name="text">
+         <string>Acquire</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="bgLoadPushButton">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

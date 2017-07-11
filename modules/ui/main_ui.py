@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Mon Jul 10 11:12:24 2017
+# Created: Tue Jul 11 12:19:38 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -50,6 +50,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.pictureSelectComboBox, 0, 1, 1, 3)
         self.nFramesSpinBox = QtGui.QSpinBox(self.centralwidget)
         self.nFramesSpinBox.setMinimum(-1)
+        self.nFramesSpinBox.setMaximum(9999)
         self.nFramesSpinBox.setObjectName("nFramesSpinBox")
         self.gridLayout.addWidget(self.nFramesSpinBox, 0, 5, 1, 1)
         self.saveRawCheckBox = QtGui.QCheckBox(self.centralwidget)
@@ -72,11 +73,6 @@ class Ui_MainWindow(object):
         self.counterDisplay = QtGui.QLCDNumber(self.centralwidget)
         self.counterDisplay.setObjectName("counterDisplay")
         self.gridLayout.addWidget(self.counterDisplay, 0, 7, 1, 1)
-        self.bgAcquirePushButton = QtGui.QPushButton(self.centralwidget)
-        self.bgAcquirePushButton.setCheckable(True)
-        self.bgAcquirePushButton.setChecked(False)
-        self.bgAcquirePushButton.setObjectName("bgAcquirePushButton")
-        self.gridLayout.addWidget(self.bgAcquirePushButton, 2, 4, 1, 1)
         self.bgNameGuiLabel = QtGui.QLabel(self.centralwidget)
         self.bgNameGuiLabel.setObjectName("bgNameGuiLabel")
         self.gridLayout.addWidget(self.bgNameGuiLabel, 2, 2, 1, 1)
@@ -87,6 +83,14 @@ class Ui_MainWindow(object):
         self.saveToLineEdit = QtGui.QLineEdit(self.centralwidget)
         self.saveToLineEdit.setObjectName("saveToLineEdit")
         self.gridLayout.addWidget(self.saveToLineEdit, 3, 2, 1, 4)
+        self.bgAcquirePushButton = QtGui.QPushButton(self.centralwidget)
+        self.bgAcquirePushButton.setCheckable(True)
+        self.bgAcquirePushButton.setChecked(False)
+        self.bgAcquirePushButton.setObjectName("bgAcquirePushButton")
+        self.gridLayout.addWidget(self.bgAcquirePushButton, 2, 5, 1, 1)
+        self.bgLoadPushButton = QtGui.QPushButton(self.centralwidget)
+        self.bgLoadPushButton.setObjectName("bgLoadPushButton")
+        self.gridLayout.addWidget(self.bgLoadPushButton, 2, 4, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.line = QtGui.QFrame(self.centralwidget)
         self.line.setFrameShape(QtGui.QFrame.HLine)
@@ -162,8 +166,9 @@ class Ui_MainWindow(object):
         self.counterLabel.setText(QtGui.QApplication.translate("MainWindow", "Counter", None, QtGui.QApplication.UnicodeUTF8))
         self.pictureSelectLabel.setText(QtGui.QApplication.translate("MainWindow", "Picture select", None, QtGui.QApplication.UnicodeUTF8))
         self.nFramesLabel.setText(QtGui.QApplication.translate("MainWindow", "N frames", None, QtGui.QApplication.UnicodeUTF8))
-        self.bgAcquirePushButton.setText(QtGui.QApplication.translate("MainWindow", "Acquire", None, QtGui.QApplication.UnicodeUTF8))
         self.bgNameGuiLabel.setText(QtGui.QApplication.translate("MainWindow", "Current:", None, QtGui.QApplication.UnicodeUTF8))
+        self.bgAcquirePushButton.setText(QtGui.QApplication.translate("MainWindow", "Acquire", None, QtGui.QApplication.UnicodeUTF8))
+        self.bgLoadPushButton.setText(QtGui.QApplication.translate("MainWindow", "Load", None, QtGui.QApplication.UnicodeUTF8))
         self.roiControlLabel.setText(QtGui.QApplication.translate("MainWindow", "ROI control:", None, QtGui.QApplication.UnicodeUTF8))
         self.roiLeftLabel.setText(QtGui.QApplication.translate("MainWindow", "Left", None, QtGui.QApplication.UnicodeUTF8))
         self.roiWidthLabel.setText(QtGui.QApplication.translate("MainWindow", "Width", None, QtGui.QApplication.UnicodeUTF8))

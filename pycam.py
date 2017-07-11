@@ -155,6 +155,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.roiMaxPushButton.clicked.connect(self.setup_roi_max)
         self.bgMatchCheckBox.stateChanged.connect(self.on_toggle_bgmatch)
         self.bgAcquirePushButton.toggled.connect(self.on_toggle_bgacquire)
+        self.bgLoadPushButton.clicked.connect(self.on_load_background)
         
         
     def load_picture(self, pic_name):
@@ -195,7 +196,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         
     def on_toggle_bgmatch(self, state):
         print('toggle use bgmatch')
-        for widget in ['bgAcquirePushButton', 'bgNameGuiLabel', 'bgNameLabel']:
+        for widget in ['bgAcquirePushButton', 'bgLoadPushButton', 'bgNameGuiLabel', 'bgNameLabel']:
             getattr(self, widget).setVisible(state)
         pass
     
@@ -208,6 +209,15 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.load_picture(self.last_pic)
             self.pictureSelectComboBox.setVisible(True)
+            
+    def on_load_background(self,):
+        file, _ = QtGui.QFileDialog.getOpenFileName(dir=bg_savedir)
+        print(file)
+        self.bgman.load_dataset(file)
+        disp = '-'.join(os.path.split(file)[1].split('-')[-2:])
+        self.bgNameLabel.setText(disp)
+        self.imageView.setImage(self.bgman.mask, autoRange=True, autoLevels=True,
+            autoHistogramRange=True)
             
     def start_camera(self):
         self.camera.start_capture()
@@ -253,7 +263,11 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
     def finalize(self):
         if self._finalize is not None:
             print('apply finalize fun %s'%self._finalize.__name__)
-        od = self._finalize(self._frames_list)
+        else:
+            print('No finalize set')
+            return
+        bgfun = self.bgman.compute_bg if self.match_bg else None
+        od = self._finalize(self._frames_list,  bgfun)
         stack = np.empty((len(self._frames_list),)+self._frames_list[0].shape)
         for j, im in enumerate(self._frames_list):
             stack[j] = im
@@ -266,6 +280,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.reset_pic_counter()
         
     def reset_pic_counter(self):
+        del self._frames_list
         self._frames_list = []
         self.count = 0
 
