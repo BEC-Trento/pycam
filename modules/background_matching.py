@@ -43,6 +43,9 @@ class BackgroundManager():
         
     def build_acquired_bg(self, frames_list, match_bg_fun=None):
         dataset = np.concatenate([f[np.newaxis, ...] for f in frames_list], axis=0)
+        return self.save_bg(dataset)
+        
+    def save_bg(self, dataset):
         self.name = self.get_timestamped_name()
         path = os.path.join(self.savedir, self.name + '.npy')
         np.save(path, dataset)
@@ -70,6 +73,7 @@ class BackgroundManager():
         
     def load_mask(self, mask):
         self.mask = mask
+        self.wmask = np.where(mask)
         
     def compute_bg_matrix(self,):
         if self.B_dataset is None:
@@ -78,20 +82,20 @@ class BackgroundManager():
         if self.mask is None:    
             print('You must set a mask first')
             return
-        beta = np.concatenate([b[self.mask][np.newaxis, :] for b in self.B_dataset], axis=0)
+        beta = np.concatenate([b[self.wmask][np.newaxis, :] for b in self.B_dataset], axis=0)
         self.BB = np.dot(beta, beta.T)
         print('Match area shape:', beta.shape)        
         self.beta = beta
         # return beta, BB_inv
 
     def compute_bg(self, image, output_coeff=False):
-        alpha = np.dot(self.beta, image[self.mask])
+        alpha = np.dot(self.beta, image[self.wmask])
         try:        
             c = np.linalg.solve(self.BB, alpha)
         except np.linalg.LinAlgError as err:
             print(err)
             print('BB matrix is singular: will pseudo-solve')
-            c = np.linalg.lstsq(self.BB, alpha)
+            c = np.linalg.lstsq(self.BB, alpha)[0]
         B_opt = np.sum(self.B_dataset*c[:, np.newaxis, np.newaxis], axis=0)
         if output_coeff:
             return c, B_opt

@@ -63,8 +63,8 @@ def finalize_picture_1_frame(frames_list,):
     return frame
     
 def finalize_picture_movie_n_frames(frames_list, match_bg_fun=None):
-    probe0 = frames_list[0]
-    frames = frames_list[1:]
+    probe0 = frames_list[-1]
+    frames = frames_list[:-1]
     Nframes = len(frames)
     print('Ho trovato %d immagini'%Nframes)
     odlist = []
