@@ -63,7 +63,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.rewrite_roi_spinboxes()
         self.connectInputWidgets()
         self.pictureSelectComboBox.addItems(list(pictures_d.keys()))
-        self.pictureSelectComboBox.setCurrentIndex(self.pictureSelectComboBox.findText(default_picture))
+        self.pictureSelectComboBox.setCurrentIndex(self.pictureSelectComboBox.setCurrentItem(default_picture))
         
         
     @property

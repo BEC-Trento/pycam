@@ -19,12 +19,14 @@
 #
 import numpy as np
 
-cameras_d = {'vert': 2892819673563407,
+cameras_d = {'vert': 2892819673539838,#2892819673563407,
              'horiz': 2892819673536359,
+             'axial': 2892819673563407,
              }
 
-default_savedir = '/home/bec/CAM/img' #os.path.abspath('.')
-default_savename = 'test_0.sis'
+default_savedir = '/home/bec/cam-bec-tn/img' #os.path.abspath('.')
+bg_savedir = '/home/bec/pycam/bgmatch_data'
+default_savenames = ['test_0.sis', 'test_1.sis']
 
 setup_d = {
  'camera_mode': 'FORMAT7_0',
@@ -36,23 +38,24 @@ setup_d = {
  'shutter': {'value': 20},
 # 'temperature': <pydc1394.camera2.Temperature at 0x7f5eca140400>,
  'trigger': {'active': True, 'source': '0', 'mode': '1', 'polarity': 'ACTIVE_HIGH'},
- 'trigger_delay': {'value': 0},
+ 'trigger_delay': {'value': 5000},
 }
 
 
 
             
-def finalize_picture_OD_4_frames(frames_list,):
+def finalize_picture_OD_4_frames(frames_list, match_bg_fun=None):
     frames_list = [f.astype(np.float64) for f in frames_list]
     bg = frames_list[3]
-    atoms, probe = frames_list[0:2]
-    atoms = atoms #- bg 
-    probe = probe #- bg 
+    atoms, probe0 = frames_list[0:2]
+    atoms = atoms - bg
+    probe = probe0 if match_bg_fun is None else match_bg_fun(atoms)
+    probe = probe - bg 
     #TODO: check this step here
-    
-#        OD = -np.log(atoms/probe)
     OD = np.log((probe+1)/(atoms+1))
-    OD[OD<0] = 0
+#    OD[OD<0] = 0
+    h, w = OD.shape
+    OD = np.pad(OD, pad_width=((0,1234-h), (0,1624-w)), mode='constant', constant_values=0)
     return OD        
 
 def finalize_picture_1_frame(frames_list,):
@@ -60,7 +63,32 @@ def finalize_picture_1_frame(frames_list,):
     frame = f.astype(np.float64)
     return frame
     
-def finalize_picture_movie_n_frames(frames_list,):
+def finalize_picture_movie_n_frames(frames_list, match_bg_fun=None):
+    probe0 = frames_list[-1]
+    frames = frames_list[:-1]
+    Nframes = len(frames)
+    print('Ho trovato %d immagini'%Nframes)
+    odlist = []
+    for f in frames:
+        probe = probe0 if match_bg_fun is None else match_bg_fun(f)
+        OD = -np.log((f+1e-5)/(probe+1e-5))
+        OD[OD<0] = 0
+        odlist.append(OD)
+    h, w = OD.shape
+    W = 1624
+    H = 1234
+    Lw = W // w
+    Lh = H // h
+    Nframes_written = Lw * Lh
+    image = np.zeros((H, W))
+    dims = (Lh, Lw)
+    print('Writing the first %d out of %d frames in a %d x %d matrix\ntotal picture size: %d x %d'%(Nframes_written, Nframes, Lh, Lw, H, W))
+    for j, od in enumerate(odlist[:Nframes_written]):
+        p, q = np.unravel_index(j, dims)
+        image[p*h:(p+1)*h, q*w:(q+1)*w] = od
+    return image
+    
+def finalize_picture_movie_n_frames_vary_height(frames_list,):
     probe = frames_list[0]
     frames = frames_list[1:]
     Nframes = len(frames)

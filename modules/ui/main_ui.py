@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Tue Jul 11 12:19:38 2017
+# Created: Wed Apr 18 11:51:50 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -80,9 +80,6 @@ class Ui_MainWindow(object):
         self.bgNameLabel.setText("")
         self.bgNameLabel.setObjectName("bgNameLabel")
         self.gridLayout.addWidget(self.bgNameLabel, 2, 3, 1, 1)
-        self.saveToLineEdit = QtGui.QLineEdit(self.centralwidget)
-        self.saveToLineEdit.setObjectName("saveToLineEdit")
-        self.gridLayout.addWidget(self.saveToLineEdit, 3, 2, 1, 4)
         self.bgAcquirePushButton = QtGui.QPushButton(self.centralwidget)
         self.bgAcquirePushButton.setCheckable(True)
         self.bgAcquirePushButton.setChecked(False)
@@ -91,6 +88,12 @@ class Ui_MainWindow(object):
         self.bgLoadPushButton = QtGui.QPushButton(self.centralwidget)
         self.bgLoadPushButton.setObjectName("bgLoadPushButton")
         self.gridLayout.addWidget(self.bgLoadPushButton, 2, 4, 1, 1)
+        self.saveToLineEdit = QtGui.QLineEdit(self.centralwidget)
+        self.saveToLineEdit.setObjectName("saveToLineEdit")
+        self.gridLayout.addWidget(self.saveToLineEdit, 3, 3, 1, 3)
+        self.saveNameComboBox = QtGui.QComboBox(self.centralwidget)
+        self.saveNameComboBox.setObjectName("saveNameComboBox")
+        self.gridLayout.addWidget(self.saveNameComboBox, 3, 2, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.line = QtGui.QFrame(self.centralwidget)
         self.line.setFrameShape(QtGui.QFrame.HLine)
@@ -148,7 +151,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 736, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 736, 24))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)

@@ -19,13 +19,14 @@
 #
 import numpy as np
 
-cameras_d = {'vert': 2892819673563407,
+cameras_d = {'vert': 2892819673539838,#2892819673563407,
              'horiz': 2892819673536359,
+             'axial': 2892819673563407,
              }
 
-default_savedir = '/home/bec/CAM/img' #os.path.abspath('.')
+default_savedir = '/home/bec/cam-bec-tn/img' #os.path.abspath('.')
 bg_savedir = '/home/bec/pycam/bgmatch_data'
-default_savename = 'test_0.sis'
+default_savenames = ['test_0.sis', 'test_1.sis']
 
 setup_d = {
  'camera_mode': 'FORMAT7_0',
@@ -37,7 +38,7 @@ setup_d = {
  'shutter': {'value': 20},
 # 'temperature': <pydc1394.camera2.Temperature at 0x7f5eca140400>,
  'trigger': {'active': True, 'source': '0', 'mode': '1', 'polarity': 'ACTIVE_HIGH'},
- 'trigger_delay': {'value': 0},
+ 'trigger_delay': {'value': 5000},
 }
 
 
@@ -124,3 +125,5 @@ pictures_d = {
      'N_frames': None,
      },
 }
+
+default_picture = 'Picture 4 frames'

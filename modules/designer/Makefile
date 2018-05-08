@@ -22,7 +22,7 @@ PYRCC = pyside-rcc #pyrcc4
 COMPILED_UI = $(UI_FILES:$(RESOURCE_DIR)/%.ui=$(COMPILED_DIR)/%_ui.py)
 COMPILED_RESOURCES = $(RESOURCES:$(RESOURCE_DIR)/%.qrc=$(COMPILED_RESOURCES_DIR)/%_rc.py)
  
-all : ui resources
+all : resources ui
  
 resources : $(COMPILED_RESOURCES) 
  
