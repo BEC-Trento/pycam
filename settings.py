@@ -24,7 +24,7 @@ cameras_d = {'vert': 2892819673539838,#2892819673563407,
              'axial': 2892819673563407,
              }
 
-default_savedir = '/home/bec/cam-bec-tn/img' #os.path.abspath('.')
+default_savedir = '/home/stronzio/c-siscam-img' #os.path.abspath('.')
 bg_savedir = '/home/bec/pycam/bgmatch_data'
 default_savenames = ['test_0.sis', 'test_1.sis']
 

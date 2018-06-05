@@ -217,12 +217,14 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
             # This is OK
             height, width = image.shape
             size = np.array([height, width], dtype=np.uint16)
-            fid.write(size.tobytes())
+            fid.write(bytes(size))
+#            fid.write(size.tobytes())
 #            size.tofile(fid)
     
             # Here we put 2*2 more bytes with the sub-block dimension
             Bsize = np.array([Bheight, Bwidth], dtype=np.uint16)
-            fid.write(Bsize.tobytes())
+            fid.write(bytes(Bsize))
+#            fid.write(Bsize.tobytes())
 #            Bsize.tofile(fid)
     
             # Also a timestamp
@@ -232,7 +234,8 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
     
             # More: commitProg + descriptive stamp
             ls = np.array([len(stamp)], dtype=np.uint16) # length of the stamp coded at the 38+39 byte
-            fid.write(ls.tobytes())
+            fid.write(bytes(ls))
+#            fid.write(ls.tobytes())
 #            ls.tofile(fid)
             fid.write(commitProg[:8].encode())
             fid.write(stamp.encode())
@@ -242,7 +245,8 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
             image += 1
             image = image * (2**16)/10
             image = np.clip(image, 1, 2**16-1)
-            fid.write(image.astype(np.uint16).tobytes())
+            fid.write(bytes(image.astype(np.uint16)))
+#            fid.write(image.astype(np.uint16).tobytes())
                 
             sis_writeOUT(filename, fid.getvalue())
         

@@ -18,22 +18,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from libtiff import TIFF
-# https://github.com/pearu/pylibtiff
-    
-        
+#from libtiff import TIFF
+## https://github.com/pearu/pylibtiff
+#    
+#        
+#def read_tif(filename, full_output=False):
+#    tiff = TIFF.open(filename, mode='r')
+#    image = tiff.read_image()
+#    tiff.close()
+#    header = ''
+#    image = np.asarray(image)
+#    if full_output:
+#        return header, image
+#    else:
+#        return image
+
+#def write_tif(filename, array):
+#    tiff = TIFF.open(str(filename), mode='w')
+#    tiff.write_image(array)
+#    tiff.close()
+from PIL import Image
+
 def read_tif(filename, full_output=False):
-    tiff = TIFF.open(filename, mode='r')
-    image = tiff.read_image()
-    tiff.close()
+    image = Image.open(filename)
     header = ''
     image = np.asarray(image)
     if full_output:
         return header, image
     else:
         return image
-
+        
 def write_tif(filename, array):
-    tiff = TIFF.open(str(filename), mode='w')
-    tiff.write_image(array)
-    tiff.close()
+    return None
