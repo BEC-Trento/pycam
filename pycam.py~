@@ -63,7 +63,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.rewrite_roi_spinboxes()
         self.connectInputWidgets()
         self.pictureSelectComboBox.addItems(list(pictures_d.keys()))
-        self.pictureSelectComboBox.setCurrentIndex(self.pictureSelectComboBox.setCurrentItem(default_picture))
+        self.pictureSelectComboBox.setCurrentIndex(self.pictureSelectComboBox.findText(default_picture))
         
         
     @property
@@ -185,7 +185,8 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         
     def load_picture(self, pic_name):
         d = pictures_d[pic_name]
-        self._finalize = d['finalize_fun']
+        self._
+e = d['finalize_fun']
         n_frames = d['N_frames']
         if n_frames is not None:
             self.lock_n_frames(lock=True, value=n_frames)
