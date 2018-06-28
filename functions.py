@@ -84,6 +84,24 @@ def finalize_picture_movie_n_frames_vary_height(frames_list,):
         image[p*h:(p+1)*h, q*w:(q+1)*w] = od
     return image, None
 
+def picture_dark_ground(frames_list,):
+    frames_list = [f.astype(np.float64) for f in frames_list]
+    bg = frames_list[3]
+    alpha = 45
+
+    omega = 1.6e-3
+    atoms, probe = frames_list[0:2]
+    atoms = atoms 
+    
+    atoms=atoms+1
+    probe=probe+1
+    
+    T = atoms/(alpha*probe)
+    
+  #  OD = 2*(np.sqrt(T+omega**2) - omega)
+    OD = 2*(np.sqrt(T))
+    return OD  
+
 pictures_d = {
 'Picture 4 frames':
     {'finalize_fun': finalize_picture_OD_4_frames,
@@ -96,6 +114,10 @@ pictures_d = {
 'Movie':
     {'finalize_fun': finalize_picture_movie_n_frames,
      'N_frames': None,
+     },
+'Dark ground': 
+    {'finalize_fun': picture_dark_ground,
+     'N_frames': 4,
      },
 }
 
