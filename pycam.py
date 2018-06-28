@@ -78,6 +78,11 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
     @property
     def savepath(self):
         return self.saveToLineEdit.text()
+        
+    @property
+    def rawsavepath(self):
+        return self.savepath.replace('test', 'raw')
+        
     @property
     def n_frames(self):
         return self.nFramesSpinBox.value()
@@ -271,16 +276,10 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             self._frames_list.append(im)
             print('acquired image %d'%self.count)
             print(im.dtype)
-            if self.save_flag:
-                self.save_frame(im)
+            
             if len(self._frames_list) == self.n_frames:
                 self.finalize()
 
-
-    def save_frame(self, frame):
-        print('Save NotImplemented')
-#        fname = 'im-%d.tif'%self.count
-#        write_tif(os.path.join(self.savedir, fname), frame)
 
     def calc_fps(self, width, height, pack_size):
         fps = pack_size * 8000 /(width*height * 2)
@@ -294,7 +293,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             print('No finalize set')
             return
         bgfun = self.bgman.compute_bg if self.match_bg else None
-        od = self._finalize(self._frames_list,  bgfun)
+        od, raw = self._finalize(self._frames_list,  bgfun)
         stack = np.empty((len(self._frames_list),)+self._frames_list[0].shape)
         for j, im in enumerate(self._frames_list):
             stack[j] = im
@@ -303,7 +302,10 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             autoHistogramRange=True)
         if od is not None:
             write_sis(self.savepath, od)
-            np.save(self.savepath[:-4]+'.npy', od)
+#            np.save(self.savepath[:-4]+'.npy', od)
+        if self.save_flag and raw is not None:
+            write_sis(self.rawsavepath, raw, sisposition='single', thalammer=False)
+                
         self.reset_pic_counter()
 
     def reset_pic_counter(self):

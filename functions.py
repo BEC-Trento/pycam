@@ -21,7 +21,7 @@ import numpy as np
 
 def finalize_picture_OD_4_frames(frames_list, match_bg_fun=None):
     frames_list = [f.astype(np.float64) for f in frames_list]
-    bg = frames_list[3]
+    bg = 0.5*(frames_list[3] + frames_list[2])
     atoms, probe0 = frames_list[0:2]
     atoms = atoms - bg
     probe = probe0 if match_bg_fun is None else match_bg_fun(atoms)
@@ -30,12 +30,13 @@ def finalize_picture_OD_4_frames(frames_list, match_bg_fun=None):
     OD = np.log((probe+1)/(atoms+1))
     h, w = OD.shape
     OD = np.pad(OD, pad_width=((0,1234-h), (0,1624-w)), mode='constant', constant_values=0)
-    return OD
+    raw = np.concatenate([atoms, probe])
+    return OD, raw
 
 def finalize_picture_1_frame(frames_list,):
     f = frames_list[0]
     frame = f.astype(np.float64)
-    return frame
+    return frame, frame
 
 def finalize_picture_movie_n_frames(frames_list, match_bg_fun=None):
     probe0 = frames_list[-1]
@@ -59,7 +60,7 @@ def finalize_picture_movie_n_frames(frames_list, match_bg_fun=None):
     for j, od in enumerate(odlist[:Nframes_written]):
         p, q = np.unravel_index(j, dims)
         image[p*h:(p+1)*h, q*w:(q+1)*w] = od
-    return image
+    return image, None
 
 def finalize_picture_movie_n_frames_vary_height(frames_list,):
     probe = frames_list[0]
@@ -81,7 +82,7 @@ def finalize_picture_movie_n_frames_vary_height(frames_list,):
     for j, od in enumerate(odlist):
         p, q = np.unravel_index(j, dims)
         image[p*h:(p+1)*h, q*w:(q+1)*w] = od
-    return image
+    return image, None
 
 pictures_d = {
 'Picture 4 frames':

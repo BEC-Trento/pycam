@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016  Simone Serafini
+# Copyright (C) 2016  Simone Serafini et al.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,12 @@ import time
 import datetime
 import os
 from io import BytesIO
+
+def thalammerize(image):
+    image += 1
+    image = image * (2**16)/10
+    image = np.clip(image, 0, 2**16-1)
+    return image
 
 def readsis(filename, verbose=False):
     ''' Read sis files, both old version and SisV2
@@ -187,7 +193,7 @@ def sis_writeOUT(filename, binData):
     os.rename(filename+".tmp", filename)
         
         
-def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sisposition=None):
+def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sisposition=None, thalammer=True):
         """
         Low-level interaction with the sis file for writing it.
         Writes the whole image, with the unused part filled with zeros.
@@ -202,7 +208,9 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
         """
         #keep the double-image convention for sis files, filling the unused
         #with zeros
-        if sisposition == 0:
+        if sisposition == 'single':
+            image = image
+        elif sisposition == 0:
             image = np.concatenate((image, np.zeros_like(image)))
         elif sisposition == 1:
             image = np.concatenate((np.zeros_like(image), image))
@@ -242,15 +250,17 @@ def sis_write(filename, image, Bheight=0, Bwidth=0, commitProg='', stamp='', sis
             freeHead = '0'*(472-len(commitProg[:8]+stamp))
             fid.write(freeHead.encode())
             
-            image += 1
-            image = image * (2**16)/10
-            image = np.clip(image, 1, 2**16-1)
+            if thalammer:
+                image = thalammerize(image)
+                
             fid.write(bytes(image.astype(np.uint16)))
 #            fid.write(image.astype(np.uint16).tobytes())
                 
             sis_writeOUT(filename, fid.getvalue())
         
         print('sis written to ' + filename)
+        
+
 
 def sis_write_off(self, OD, filename, Bheight, Bwidth, stamp):
         """
