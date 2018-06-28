@@ -100,7 +100,7 @@ def picture_dark_ground(frames_list,):
     
   #  OD = 2*(np.sqrt(T+omega**2) - omega)
     OD = 2*(np.sqrt(T))
-    return OD  
+    return OD, None
 
 pictures_d = {
 'Picture 4 frames':
