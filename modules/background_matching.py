@@ -37,7 +37,7 @@ class BackgroundManager():
         
 
     def get_timestamped_name(self,):
-        fmt='%Y-%m-%d-%H-%M-%S-{fname}'
+        fmt='%Y-%m-%d-T%H%M%S-{fname}'
         return datetime.now().strftime(fmt).format(fname=self._name)
     
         

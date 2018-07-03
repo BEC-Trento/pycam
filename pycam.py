@@ -58,7 +58,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         # WARNING: tutte le funzioni e importazioni della ROI funzionano solo con un mode: FORMAT7
         # TODO: implementa switch: if isinstance(mode, Format7)
         self._mode = self.camera.mode
-        print('Roi:', self._mode.roi)
+        print('Roi:', self._mode.roi, self._mode.dtype)
 #        print(self._mode.data_depth)
         self.limit_roi_spinboxes()
         self.rewrite_roi_spinboxes()

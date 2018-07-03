@@ -23,14 +23,14 @@ def finalize_picture_OD_4_frames(frames_list, match_bg_fun=None):
     frames_list = [f.astype(np.float64) for f in frames_list]
     bg = 0.5*(frames_list[3] + frames_list[2])
     atoms, probe0 = frames_list[0:2]
-    atoms = atoms - bg
     probe = probe0 if match_bg_fun is None else match_bg_fun(atoms)
+    raw = np.concatenate([atoms, probe, bg])
+    atoms = atoms - bg
     probe = probe - bg
     #TODO: check this step here
     OD = np.log((probe+1)/(atoms+1))
     h, w = OD.shape
     OD = np.pad(OD, pad_width=((0,1234-h), (0,1624-w)), mode='constant', constant_values=0)
-    raw = np.concatenate([atoms, probe])
     return OD, raw
 
 def finalize_picture_1_frame(frames_list,):
